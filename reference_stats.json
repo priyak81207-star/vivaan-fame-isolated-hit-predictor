@@ -1,0 +1,145 @@
+{
+  "Song Length": {
+    "successful_median": 300.28,
+    "successful_p25": 257.51,
+    "successful_p75": 380.23,
+    "all_median": 305.34,
+    "direction": "lower_is_typical_of_success"
+  },
+  "Intro Length": {
+    "successful_median": 14.37,
+    "successful_p25": 10.54,
+    "successful_p75": 19.95,
+    "all_median": 14.23,
+    "direction": "lower_is_typical_of_success"
+  },
+  "Chorus Length": {
+    "successful_median": 35.85,
+    "successful_p25": 26.15,
+    "successful_p75": 49.25,
+    "all_median": 35.55,
+    "direction": "higher_is_typical_of_success"
+  },
+  "Repetition": {
+    "successful_median": 0.395,
+    "successful_p25": 0.314,
+    "successful_p75": 0.522,
+    "all_median": 0.387,
+    "direction": "higher_is_typical_of_success"
+  },
+  "Time to First Hook": {
+    "successful_median": 101.63,
+    "successful_p25": 47.32,
+    "successful_p75": 188.43,
+    "all_median": 94.76,
+    "direction": "higher_is_typical_of_success"
+  },
+  "Chord Complexity": {
+    "successful_median": 0.545,
+    "successful_p25": 0.444,
+    "successful_p75": 0.628,
+    "all_median": 0.535,
+    "direction": "higher_is_typical_of_success"
+  },
+  "Melodic Range": {
+    "successful_median": 24.1,
+    "successful_p25": 19.0,
+    "successful_p75": 29.0,
+    "all_median": 21.97276422764228,
+    "direction": "higher_is_typical_of_success"
+  },
+  "Tempo": {
+    "successful_median": 124.33,
+    "successful_p25": 104.98,
+    "successful_p75": 140.31,
+    "all_median": 123.28,
+    "direction": "higher_is_typical_of_success"
+  },
+  "Syncopation": {
+    "successful_median": 0.183,
+    "successful_p25": 0.156,
+    "successful_p75": 0.239,
+    "all_median": 0.183,
+    "direction": "lower_is_typical_of_success"
+  },
+  "Danceability": {
+    "successful_median": 0.633,
+    "successful_p25": 0.598,
+    "successful_p75": 0.671,
+    "all_median": 0.633,
+    "direction": "lower_is_typical_of_success"
+  },
+  "Loudness": {
+    "successful_median": -11.7,
+    "successful_p25": -14.42,
+    "successful_p75": -10.41,
+    "all_median": -11.91,
+    "direction": "lower_is_typical_of_success"
+  },
+  "Dynamic Range": {
+    "successful_median": 11.78,
+    "successful_p25": 9.54,
+    "successful_p75": 16.32,
+    "all_median": 11.7,
+    "direction": "higher_is_typical_of_success"
+  },
+  "Distortion": {
+    "successful_median": 0.499,
+    "successful_p25": 0.183,
+    "successful_p75": 0.546,
+    "all_median": 0.504,
+    "direction": "lower_is_typical_of_success"
+  },
+  "Spectral Brightness": {
+    "successful_median": 3038.2,
+    "successful_p25": 2696.2,
+    "successful_p75": 3426.8,
+    "all_median": 2912.0,
+    "direction": "higher_is_typical_of_success"
+  },
+  "_meta": {
+    "n_tracks": 127,
+    "n_successful": 61,
+    "held_out_accuracy": 0.6538461538461539,
+    "feature_importances": {
+      "Song Length": 0.07467688887699245,
+      "Intro Length": 0.07458473256811256,
+      "Chorus Length": 0.057462385238904956,
+      "Repetition": 0.0629274004965425,
+      "Time to First Hook": 0.055388819633335154,
+      "Chord Complexity": 0.05464683593940377,
+      "Melodic Range": 0.10547586864486719,
+      "Tempo": 0.06286441772286647,
+      "Syncopation": 0.05876208038436028,
+      "Danceability": 0.06105502827530323,
+      "Loudness": 0.0701385320216421,
+      "Dynamic Range": 0.06706198874110264,
+      "Distortion": 0.05682770546450651,
+      "Spectral Brightness": 0.09169038307909409,
+      "Key_Encoded": 0.04643693291296614
+    },
+    "known_keys": [
+      "A major",
+      "A minor",
+      "A# major",
+      "A# minor",
+      "B major",
+      "C major",
+      "C minor",
+      "C# major",
+      "D major",
+      "D minor",
+      "D# major",
+      "D# minor",
+      "E major",
+      "E minor",
+      "F major",
+      "F minor",
+      "F# major",
+      "F# minor",
+      "G major",
+      "G minor",
+      "G# major"
+    ]
+  }
+}
