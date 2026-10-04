@@ -3,13 +3,13 @@ Fame-Isolated Hit Predictor
 ============================
 
 Upload an unreleased track + tell it who the artist is -> it extracts the
-real 15-feature audio profile (song_features.py, the same extractor used to
+real 14-feature audio profile (song_features.py, the same extractor used to
 build the whole dataset), scores it with the actual trained classifier
-(model.joblib, same one reported in the research: ~65.4% held-out accuracy),
-looks the artist up on Last.fm for a real fame signal, and combines both into
-one of the same four categories the original study sorted its 127 training
-tracks into -- so the verdict is a genuine extension of the analysis, not a
-new, disconnected feature.
+(model.joblib, same one reported in the research), looks the artist up on
+Last.fm for a real fame signal, and combines both into one of the same four
+categories the original study sorted its 127 training tracks into -- so the
+verdict is a genuine extension of the analysis, not a new, disconnected
+feature.
 """
 import base64
 import json
@@ -18,7 +18,6 @@ import tempfile
 from pathlib import Path
 
 import joblib
-import numpy as np
 import pandas as pd
 import streamlit as st
 
@@ -39,13 +38,12 @@ def _decode_if_missing(binary_name: str, b64_name: str) -> None:
 
 
 _decode_if_missing("model.joblib", "model_b64.txt")
-_decode_if_missing("key_encoder.joblib", "key_encoder_b64.txt")
 
 AUDIO_FEATURES = [
     "Song Length", "Intro Length", "Chorus Length", "Repetition",
     "Time to First Hook", "Chord Complexity", "Melodic Range",
     "Tempo", "Syncopation", "Danceability", "Loudness",
-    "Dynamic Range", "Distortion", "Spectral Brightness", "Key_Encoded",
+    "Dynamic Range", "Distortion", "Spectral Brightness",
 ]
 
 # Cap how much of the track the expensive per-frame analysis (melody
@@ -56,24 +54,23 @@ AUDIO_FEATURES = [
 # accuracy one.
 ANALYSIS_WINDOW_SECONDS = 150.0
 
-st.set_page_config(page_title="Fame-Isolated Hit Predictor", page_icon="music", layout="centered")
+st.set_page_config(page_title="Fame-Isolated Hit Predictor", page_icon="🎵", layout="centered")
 
 
 @st.cache_resource
 def load_model():
     model = joblib.load("model.joblib")
-    key_encoder = joblib.load("key_encoder.joblib")
     with open("reference_stats.json") as f:
         reference = json.load(f)
-    return model, key_encoder, reference
+    return model, reference
 
 
-model, key_encoder, reference = load_model()
+model, reference = load_model()
 meta = reference["_meta"]
 
-st.title("Fame-Isolated Hit Predictor")
+st.title("🎵 Fame-Isolated Hit Predictor")
 st.caption(
-    "Built on the same 127-track analysis as the research paper -- a real "
+    "Built on the same 127-track analysis as the research paper — a real "
     f"classifier trained on {meta['n_tracks']} tracks "
     f"({meta['held_out_accuracy']*100:.1f}% held-out accuracy), not a rule-of-thumb."
 )
@@ -82,14 +79,14 @@ st.markdown("---")
 # ---------------------------------------------------------------------------
 # Step 1: inputs
 # ---------------------------------------------------------------------------
-st.markdown("### Step 1 -- Upload the track and name the artist")
+st.markdown("### Step 1 — Upload the track and name the artist")
 audio_file = st.file_uploader("Unreleased song (MP3, WAV, or M4A)", type=["mp3", "wav", "m4a"])
 
-with st.expander("Last.fm lookup settings (one-time setup -- see README)"):
+with st.expander("Last.fm lookup settings (one-time setup — see README)"):
     st.caption(
         "This looks the artist up on Last.fm's free public API to get a real "
         "listener count, instead of guessing or Googling by hand. It needs a "
-        "free Last.fm API key (no premium account, no payment, ever) -- "
+        "free Last.fm API key (no premium account, no payment, ever) — "
         "get one at last.fm/api/account/create, see README.md."
     )
     lastfm_api_key = st.text_input("Last.fm API key", type="password", key="lastfm_key")
@@ -106,7 +103,7 @@ if lastfm_api_key:
     # app owner to have Premium just to search -- Last.fm has no such
     # requirement, so it's a free drop-in replacement for the same idea.)
     st.caption(
-        "Search Last.fm and pick the exact artist/band from the results -- this "
+        "Search Last.fm and pick the exact artist/band from the results — this "
         "avoids the lookup matching the wrong same-named artist, or missing on a typo."
     )
     search_col, button_col = st.columns([4, 1])
@@ -133,7 +130,7 @@ if lastfm_api_key:
     search_results = st.session_state.get("lastfm_search_results", [])
     if search_results:
         options = {
-            f"{a.name} -- {a.listeners:,} listeners": a
+            f"{a.name} — {a.listeners:,} listeners": a
             for a in search_results
         }
         choice_label = st.selectbox("Select the exact artist/band", list(options.keys()), key="artist_choice")
@@ -148,7 +145,7 @@ if lastfm_api_key:
 else:
     artist_name = st.text_input("Artist / band name", placeholder="e.g. The Local Train")
     st.info(
-        "No Last.fm API key entered -- you can still get a prediction by "
+        "No Last.fm API key entered — you can still get a prediction by "
         "describing the artist's current reach yourself below."
     )
     manual_fame_tier = st.select_slider(
@@ -165,7 +162,7 @@ run = st.button("Analyze track", type="primary", disabled=(audio_file is None or
 if run:
     with st.spinner(
         f"Extracting audio features (analyzing the first {ANALYSIS_WINDOW_SECONDS/60:.1f} "
-        "minutes of the track for speed -- usually 15-40s, not minutes)..."
+        "minutes of the track for speed — usually 15-40s, not minutes)..."
     ):
         suffix = Path(audio_file.name).suffix or ".mp3"
         with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
@@ -187,36 +184,18 @@ if run:
     # chorus" when it really means "chorus wasn't in the part we analyzed."
     if real_length and real_length > ANALYSIS_WINDOW_SECONDS and not feats.get("Chorus Length"):
         st.caption(
-            "No clear chorus/hook was found in the analyzed portion of this track. "
+            "⚠️ No clear chorus/hook was found in the analyzed portion of this track. "
             "If this song builds slowly and its hook lands later, the Chorus Length and "
-            "Time to First Hook figures below may understate it -- for a slow-build song, "
+            "Time to First Hook figures below may understate it — for a slow-build song, "
             "trimming and uploading a clip that starts near the hook will give a truer read."
         )
 
     # ---- Sound score: the real trained classifier, not a threshold rule ----
-    key_str = str(feats.get("Key") or "")
-    if key_str in key_encoder.classes_:
-        key_encoded = int(key_encoder.transform([key_str])[0])
-    else:
-        # -1 used to be passed straight into the model here. That's not a
-        # graceful "skip this feature" -- the classifier never saw -1 during
-        # training, and since it's lower than every real key code, a
-        # threshold split like "Key_Encoded <= 0.5" routes -1 exactly like it
-        # would route the key that happens to sit first alphabetically ("A
-        # major"). So an unseen key wasn't being ignored, it was being
-        # silently swapped for a specific WRONG one, which could tilt the
-        # verdict for no real reason. A neutral, in-range fallback (the
-        # middle key code) can't push the prediction toward any one key.
-        key_encoded = int(np.median(np.arange(len(key_encoder.classes_))))
-        st.warning(
-            f"Key '{key_str}' wasn't one of the keys in the training set "
-            f"({', '.join(meta['known_keys'])}), so this one input is a neutral "
-            "placeholder rather than a real reading -- treat this result with a "
-            "little more caution than usual, since it's built on 14 solid "
-            "features instead of 15."
-        )
-
-    row = {**{f: feats.get(f) for f in AUDIO_FEATURES[:-1]}, "Key_Encoded": key_encoded}
+    # Key was dropped from the feature set (the 127-song dataset no longer
+    # records it), so it plays no part in the model input below — the
+    # extractor can still report it for interest in the "full feature
+    # profile" panel, but nothing downstream reads it.
+    row = {f: feats.get(f) for f in AUDIO_FEATURES}
     X_new = pd.DataFrame([row])[AUDIO_FEATURES]
     sound_prob = float(model.predict_proba(X_new)[0][1])  # P(beats its own artist's baseline)
 
@@ -232,13 +211,13 @@ if run:
             st.warning(f"Last.fm lookup didn't work, so falling back: {fame_error}")
     if fame:
         fame_tier = fame.fame_tier
-        fame_label = f"{fame.name} -- {fame.listeners:,} Last.fm listeners"
+        fame_label = f"{fame.name} — {fame.listeners:,} Last.fm listeners"
     elif manual_fame_tier:
         fame_tier = manual_fame_tier.split(" ")[0]
-        fame_label = f"{artist_name} -- self-described as \"{manual_fame_tier}\""
+        fame_label = f"{artist_name} — self-described as \"{manual_fame_tier}\""
     else:
         fame_tier = "unknown"
-        fame_label = f"{artist_name} -- fame level not determined"
+        fame_label = f"{artist_name} — fame level not determined"
 
     st.markdown("---")
     st.markdown("## Result")
@@ -259,7 +238,7 @@ if run:
         quadrant = "Sound-Only Read (fame not determined)"
         color = "info"
         verdict = (
-            "**This isn't one of the four fame/sound categories** -- fame wasn't determined "
+            "**This isn't one of the four fame/sound categories** — fame wasn't determined "
             "for this artist, so calling it 'low-fame' or 'high-fame' would be a guess, not "
             "a finding. What's still solid is the sound score below: it's based only on this "
             "track's own audio structure and doesn't depend on fame either way. For the full "
@@ -280,7 +259,7 @@ if run:
         color = "success"
         verdict = (
             "**Some fame bias likely, but the song holds up on its own too.** This artist "
-            "already has a real audience, which will help regardless -- but the song's "
+            "already has a real audience, which will help regardless — but the song's "
             "structure *also* matches the pattern of genuinely overperforming tracks, so "
             "this isn't just riding on the artist's name."
         )
@@ -289,7 +268,7 @@ if run:
         color = "warning"
         verdict = (
             "**Likely fame-biased.** This artist already has a substantial following, so "
-            "the song may still do fine in raw numbers -- but its own structure does *not* "
+            "the song may still do fine in raw numbers — but its own structure does *not* "
             "closely resemble tracks that outperformed expectations. If it succeeds, that "
             "success would probably trace mainly to the artist's existing fame, not this "
             "song's own structure."
@@ -301,29 +280,27 @@ if run:
             "**Not fame-biased, but not favored either.** This artist doesn't have a large "
             "audience yet, and the song's structure doesn't closely match the pattern of "
             "tracks that beat expectations. On the current evidence this specific track "
-            "looks like an uphill climb -- see the reasoning below for what's working against it."
+            "looks like an uphill climb — see the reasoning below for what's working against it."
         )
 
-    getattr(st, color)(f"**{quadrant}** -- {fame_label}")
+    getattr(st, color)(f"**{quadrant}** — {fame_label}")
     st.markdown(verdict)
-    st.metric("Sound score -- matches the pattern of tracks that outperformed", f"{sound_prob*100:.0f}%")
+    st.metric("Sound score — matches the pattern of tracks that outperformed", f"{sound_prob*100:.0f}%")
     st.caption(
         "This is NOT literally \"the odds this exact song beats a baseline this artist "
-        "doesn't have yet\" -- for a new or unreleased artist there's no history to beat. "
+        "doesn't have yet\" — for a new or unreleased artist there's no history to beat. "
         "It means: of the 127 training tracks, this is how closely this song's *audio "
         "structure* resembles the ones whose numbers beat their own artist's typical release."
     )
 
     # ---- Reasoning: the actual top features the model leans on, compared to what "beat the baseline" tracks look like ----
-    st.markdown("### Why -- the features driving this")
+    st.markdown("### Why — the features driving this")
     st.caption(
         "Ranked by how much weight the trained model actually puts on each feature "
         "(not just the 3 the earlier prototype checked)."
     )
     importances = meta["feature_importances"]
-    plain_feats_ranked = sorted(
-        [f for f in importances if f != "Key_Encoded"], key=lambda f: -importances[f]
-    )[:6]
+    plain_feats_ranked = sorted(importances, key=lambda f: -importances[f])[:6]
 
     for feat in plain_feats_ranked:
         val = feats.get(feat)
@@ -331,7 +308,7 @@ if run:
         if val is None:
             continue
 
-        # A checkmark/warning used to be shown for every one of these, even when
+        # A ✅/⚠️ used to be shown for every one of these, even when
         # "successful" tracks and the dataset as a whole land on basically
         # the same number (Danceability's two medians are identical to 3
         # decimal places, for instance) -- on a 127-song dataset that gap is
@@ -339,7 +316,7 @@ if run:
         # evidence when there wasn't any. Now a feature only gets a
         # directional icon when the gap between the two medians is at least
         # 15% of the successful tracks' own spread (P75-P25); otherwise it's
-        # shown as neutral instead of a fabricated positive or negative icon.
+        # shown as neutral instead of a fabricated ✅ or ⚠️.
         iqr = ref["successful_p75"] - ref["successful_p25"]
         gap = ref["successful_median"] - ref["all_median"]
         has_signal = iqr > 0 and abs(gap) >= 0.15 * iqr
@@ -348,14 +325,14 @@ if run:
             direction_good = ref["direction"] == "higher_is_typical_of_success"
             above = val >= ref["successful_median"]
             aligned = above == direction_good
-            icon = "[+]" if aligned else "[!]"
+            icon = "✅" if aligned else "⚠️"
             note = (
                 f"vs **{ref['successful_median']:.3g}** typical for tracks that beat "
                 "their artist's baseline"
             )
         else:
-            icon = "[-]"
-            note = "close to typical either way in this dataset -- not a strong individual signal"
+            icon = "➖"
+            note = "close to typical either way in this dataset — not a strong individual signal"
 
         st.markdown(
             f"{icon} **{feat}**: your track is **{val:.3g}**, {note} "
@@ -369,5 +346,5 @@ st.markdown("---")
 st.caption(
     "Sound score comes from a Random Forest trained only on audio features (no fame signal). "
     "Fame comes from Last.fm or your own estimate, kept completely separate, then combined at "
-    "the end -- the same separation of \"song\" from \"artist\" the whole research project is about."
+    "the end — the same separation of \"song\" from \"artist\" the whole research project is about."
 )
